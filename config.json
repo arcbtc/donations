@@ -1,0 +1,6 @@
+{
+  "name": "Donations",
+  "short_description": "Shareable donations pages",
+	"tile": "/donations/static/image/donations.png",
+  "contributors": ["arcbtc"]
+}

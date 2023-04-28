@@ -1,0 +1,9 @@
+{
+    "repos": [
+        {
+            "id": "donations",
+            "organisation": "arcbtc",
+            "repository": "donations"
+        }
+    ]
+}

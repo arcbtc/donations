@@ -1,0 +1,66 @@
+{% extends "public.html" %} {% block page %}
+<div  style="width: 240px">
+  <q-card class="my-card">
+
+    <p class="text-h1">{% raw %}{{ updatedAmount }}{% endraw %}</p>
+    <p class="text-h3">{{ title }}</p>
+    <p class="text-h4">{{ description }}</p>
+    
+
+   </q-card>
+  </div>
+{% endblock %} {% block scripts %}
+<script>
+  Vue.component(VueQrcode.name, VueQrcode)
+  new Vue({
+    el: '#vue',
+    mixins: [windowMixin],
+    data: function () {
+      return {
+        amount: 100,
+        donation: '{{ donation }}'
+      }
+    },
+    computed: {
+      updatedAmount: function () {
+        self = this
+        return self.amount
+      }
+    },
+    methods: {
+      getDonation: function(){
+        return this.donation
+      }
+    },
+    created: function () {
+      var getDonation = this.getDonation
+      getDonation()
+      self = this
+      if (location.protocol !== 'http:') {
+        localUrl =
+          'wss://' +
+          document.domain +
+          ':' +
+          location.port +
+          '/api/v1/ws/' +
+          this.donation
+      } else {
+        localUrl =
+          'ws://' +
+          document.domain +
+          ':' +
+          location.port +
+          '/api/v1/ws/' +
+          this.donation
+      }
+      console.log(localUrl)
+      this.connection = new WebSocket(localUrl)
+      this.connection.onmessage = function (e) {
+        console.log(e.data)
+        self.amount = e.data
+      }
+      this.connection.onopen = () => this.launch
+    }
+  })
+</script>
+{% endblock %}
