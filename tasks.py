@@ -4,6 +4,7 @@ from loguru import logger
 
 from lnbits.core.models import Payment
 from lnbits.core.services import create_invoice, pay_invoice, websocketUpdater
+from lnbits.core.views.api import api_wallet
 from lnbits.helpers import get_current_extension_name
 from lnbits.tasks import register_invoice_listener
 
@@ -24,28 +25,12 @@ async def on_invoice_paid(payment: Payment) -> None:
         return
 
     donations_id = payment.extra.get("donationsId")
+
     donation = get_donation(donations_id)
 
-    await websocketUpdater(donations_id, str(strippedPayment))
+    walletstuff = api_wallet(donation.wallet)
 
-    if not tipAmount:
-        # no tip amount
-        return
+    logger.debug(walletstuff)
+    
+    return await websocketUpdater(donations_id, str(walletstuff.balance))
 
-    wallet_id = donations.tip_wallet
-    assert wallet_id
-
-    payment_hash, payment_request = await create_invoice(
-        wallet_id=wallet_id,
-        amount=int(tipAmount),
-        internal=True,
-        memo="donations tip",
-    )
-    logger.debug(f"donations: tip invoice created: {payment_hash}")
-
-    checking_id = await pay_invoice(
-        payment_request=payment_request,
-        wallet_id=payment.wallet_id,
-        extra={**payment.extra, "tipSplitted": True},
-    )
-    logger.debug(f"donations: tip invoice paid: {checking_id}")

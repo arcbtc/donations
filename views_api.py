@@ -1,7 +1,7 @@
 from http import HTTPStatus
 
 import httpx
-from fastapi import Depends, Query
+from fastapi import Depends, Query, Request
 from lnurl import decode as decode_lnurl
 from loguru import logger
 from starlette.exceptions import HTTPException
@@ -16,7 +16,7 @@ from lnbits.settings import settings
 from . import donations_ext
 from .crud import create_donations, delete_donations, get_donation, get_donations
 from .models import Donations
-
+from lnurl import encode as lnurl_encode
 
 @donations_ext.get("/api/v1/donations", status_code=HTTPStatus.OK)
 async def api_donations(
@@ -54,3 +54,11 @@ async def api_donations_delete(
 
     await delete_donations(donations_id)
     return "", HTTPStatus.NO_CONTENT
+
+
+@donations_ext.get("/api/v1/donations/lnurl/{donation_id}", status_code=HTTPStatus.OK)
+async def api_donations_create_lnurl(
+    req: Request, donation_id: str):
+    logger.debug(req.url.scheme + "://" + req.client.host + "/donations/lnurl/" + donation_id)
+    lnurl = await lnurl_encode(req.url.scheme + "://" + req.client.host + "/donations/lnurl/" + donation_id)
+    return lnurl

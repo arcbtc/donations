@@ -1,12 +1,24 @@
 {% extends "public.html" %} {% block page %}
 <div  style="width: 240px">
-  <q-card class="my-card">
+  
 
     <p class="text-h1">{% raw %}{{ updatedAmount }}{% endraw %}</p>
     <p class="text-h3">{{ title }}</p>
     <p class="text-h4">{{ description }}</p>
     
-
+    <q-card class="my-card">
+      <qrcode
+        :value="'lightning:' + lnurl"
+        :options="{width:250}"
+        class="rounded-borders"
+      ></qrcode>
+     
+      <div class="row q-mt-lg q-gutter-sm">
+        <q-btn outline color="grey" @click="copyText('{{ updatedLnurl }}')"
+          >Copy LNURL</q-btn
+        >
+      </div>
+    
    </q-card>
   </div>
 {% endblock %} {% block scripts %}
@@ -18,6 +30,7 @@
     data: function () {
       return {
         amount: 100,
+        lnurl: "",
         donation: '{{ donation }}'
       }
     },
@@ -25,16 +38,29 @@
       updatedAmount: function () {
         self = this
         return self.amount
+      },
+      updatedLnurl: function () {
+        self = this
+        return self.lnurl
       }
     },
     methods: {
-      getDonation: function(){
-        return this.donation
+      getLNURL: function(){
+        var self = this
+        LNbits.api
+          .request(
+            'GET',
+            '/api/v1/donations/lnurl/' + this.donation
+          )
+          .then(function (response) {
+            self.lnurl
+          })
+        return 
       }
     },
     created: function () {
-      var getDonation = this.getDonation
-      getDonation()
+      var getLNURL = this.getLNURL
+      getLNURL()
       self = this
       if (location.protocol !== 'http:') {
         localUrl =
